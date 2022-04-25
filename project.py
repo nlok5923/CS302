@@ -6,49 +6,49 @@ with open('./project_input.txt') as file:
 
 print(projects)
 
-thrlen = int(input('Enter no. of teachers '))
-stlen = int(input('Enter no. of students '))
+no_of_teachers = int(input('Enter no. of teachers '))
+no_of_students = int(input('Enter no. of students '))
 
-stds = {}
-thrs = {}
-T_LIM = 2
+students = {}
+teachers = {}
+TEACHER_LIMIT = 2
 
-prlen = len(projects)
+no_of_projects = len(projects)
 
-r_mapping = {idx : i for idx, i in enumerate(projects)}
+project_index_mapping = {idx : i for idx, i in enumerate(projects)}
 
-spr = prlen//stlen
-for i in range(stlen):
-    if i == stlen - 1:
-        stds[i] = [projects[j] for j in range(i*spr, prlen)]
+project_student_ratio = no_of_projects//no_of_students
+for i in range(no_of_students):
+    if i == no_of_students - 1:
+        students[i] = [projects[j] for j in range(i*project_student_ratio, no_of_projects)]
         continue
-    stds[i] = [projects[i*spr + j] for j in range(spr)]
+    students[i] = [projects[i*project_student_ratio + j] for j in range(project_student_ratio)]
 
-for i in range(stlen):
+for i in range(no_of_students):
     for temp in range(2):
-        idx = random.randint(0, prlen - 1)
-        while r_mapping[idx] in stds[i]:
-            idx = random.randint(0, prlen - 1)
-        stds[i].append(r_mapping[idx])
+        idx = random.randint(0, no_of_projects - 1)
+        while project_index_mapping[idx] in students[i]:
+            idx = random.randint(0, no_of_projects - 1)
+        students[i].append(project_index_mapping[idx])
 
-tpr = prlen//thrlen
-for i in range(thrlen):
-    if i == thrlen - 1:
-        thrs[i] = [projects[j] for j in range(i*tpr, prlen)]
+project_teacher_ratio = no_of_projects//no_of_teachers
+for i in range(no_of_teachers):
+    if i == no_of_teachers - 1:
+        teachers[i] = [projects[j] for j in range(i*project_teacher_ratio, no_of_projects)]
         continue
-    thrs[i] = [projects[i*tpr + j] for j in range(tpr)]
+    teachers[i] = [projects[i*project_teacher_ratio + j] for j in range(project_teacher_ratio)]
 
-for i in range(thrlen):
+for i in range(no_of_teachers):
     for temp in range(2):
-        idx = random.randint(0, prlen - 1)
-        while r_mapping[idx] in thrs[i]:
-            idx = random.randint(0, prlen - 1)
-        thrs[i].append(r_mapping[idx])
+        idx = random.randint(0, no_of_projects - 1)
+        while project_index_mapping[idx] in teachers[i]:
+            idx = random.randint(0, no_of_projects - 1)
+        teachers[i].append(project_index_mapping[idx])
 
 print('Students - ')
-print(stds)
+print(students)
 print('Teachers - ')
-print(thrs)
+print(teachers)
 
 # def check_constraints(matrix):
 #     for i in matrix:
@@ -72,21 +72,21 @@ print(thrs)
 #     for sidx, student in enumerate(matrix):
 #         for idx, choice in enumerate(student):
 #             if choice == 1:
-#                 if not (r_mapping[idx] in  stds[sidx]):
+#                 if not (project_index_mapping[idx] in  students[sidx]):
 #                     return False
 
 #     return True
 
 def recurse_call(teach, assign, level, ans_seq):
     res_seq = []
-    if level == stlen - 1:
+    if level == no_of_students - 1:
         for i in assign[level]:
-            if teach[i] + 1 <= T_LIM:
+            if teach[i] + 1 <= TEACHER_LIMIT:
                 ans_seq.append(i)
                 return ans_seq, True
         return ans_seq, False
     for i in assign[level]:
-        if teach[i] + 1 <= T_LIM:
+        if teach[i] + 1 <= TEACHER_LIMIT:
             teach[i] += 1
             res_seq, ans = recurse_call(teach.copy(), assign.copy(), level + 1, ans_seq)
             teach[i] -= 1
@@ -101,11 +101,11 @@ def teach_constraint(matrix):
         for cidx, col in enumerate(row):
             if col == 1:
                 temp = []
-                for teacher, subject in thrs.items():
-                    if r_mapping[cidx] in subject:
+                for teacher, subject in teachers.items():
+                    if project_index_mapping[cidx] in subject:
                         temp.append(teacher)
         assign.append(temp)
-    teach = [0 for i in range(thrlen)]
+    teach = [0 for i in range(no_of_teachers)]
     ans = False
     res_seq = []
     for val in assign[0]:
@@ -118,13 +118,13 @@ def teach_constraint(matrix):
     return res_seq,False
 
 def random_gen():
-    matrix = [[0 for j in range(prlen)] for i in range(stlen)]
+    matrix = [[0 for j in range(no_of_projects)] for i in range(no_of_students)]
     booked = []
     t_idx = []
     while True:
-        for i in range(stlen):
+        for i in range(no_of_students):
             idx = random.randint(0,len(projects) - 1)
-            while not(r_mapping[idx] in stds[i]) or idx in booked:
+            while not(project_index_mapping[idx] in students[i]) or idx in booked:
                 idx = random.randint(0,len(projects) - 1)
             matrix[i][idx] = 1
             booked.append(idx)
@@ -146,7 +146,7 @@ def energy(matrix):
     for ridx, row in enumerate(matrix):
         for cidx, col in enumerate(row):
             if col == 1:
-                val += stds[ridx].index(r_mapping[cidx]) + 1
+                val += students[ridx].index(project_index_mapping[cidx]) + 1
     return val
 
 my_sequence = [random_gen()]
@@ -171,8 +171,8 @@ for i in range(10000):
 for r_idx, row in enumerate(my_sequence[idx]):
     for c_idx, col in enumerate(row):
         if col == 1:
-            print("Student", r_idx + 1, "-", r_mapping[c_idx])
+            print("Student", r_idx + 1, "-", project_index_mapping[c_idx])
 
 ans_seq, val = teach_constraint(my_sequence[idx])
-for student in range(stlen):
-    print("Student", student + 1, "assigned to teacher", ans_seq[stlen - 1 - student] + 1)
+for student in range(no_of_students):
+    print("Student", student + 1, "assigned to teacher", ans_seq[no_of_students - 1 - student] + 1)
