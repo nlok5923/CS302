@@ -1,63 +1,81 @@
 import math
 import random
 
-with open('./input.txt') as file:
+with open('./project_input.txt') as file:
     projects = file.read().split()
 
 print(projects)
 
-thrs_c = int(input('Enter no. of teachers '))
-stds_c = int(input('Enter no. of students '))
+thrlen = int(input('Enter no. of teachers '))
+stlen = int(input('Enter no. of students '))
 
 stds = {}
 thrs = {}
 T_LIM = 2
 
-for i in range(stds_c):
-    idx = random.randint(0, len(projects) - 5)
-    stds[i] = [projects[idx + j] for j in range(4)]
+prlen = len(projects)
 
-for i in range(thrs_c):
-    idx = random.randint(0, len(projects) - 5)
-    thrs[i] = [projects[idx + j] for j in range(4)]
+r_mapping = {idx : i for idx, i in enumerate(projects)}
+
+spr = prlen//stlen
+for i in range(stlen):
+    if i == stlen - 1:
+        stds[i] = [projects[j] for j in range(i*spr, prlen)]
+        continue
+    stds[i] = [projects[i*spr + j] for j in range(spr)]
+
+for i in range(stlen):
+    for temp in range(2):
+        idx = random.randint(0, prlen - 1)
+        while r_mapping[idx] in stds[i]:
+            idx = random.randint(0, prlen - 1)
+        stds[i].append(r_mapping[idx])
+
+tpr = prlen//thrlen
+for i in range(thrlen):
+    if i == thrlen - 1:
+        thrs[i] = [projects[j] for j in range(i*tpr, prlen)]
+        continue
+    thrs[i] = [projects[i*tpr + j] for j in range(tpr)]
+
+for i in range(thrlen):
+    for temp in range(2):
+        idx = random.randint(0, prlen - 1)
+        while r_mapping[idx] in thrs[i]:
+            idx = random.randint(0, prlen - 1)
+        thrs[i].append(r_mapping[idx])
 
 print('Students - ')
 print(stds)
 print('Teachers - ')
 print(thrs)
 
-mapping = {i : idx for idx, i in enumerate(projects)}
-r_mapping = {idx : i for i, idx in mapping.items()}
-stlen = len(stds)
-prlen = len(projects)
-thrlen = len(thrs)
-
-def check_constraints(matrix):
-    for i in matrix:
-        count = 0
-        for j in i:
-            if j == 1:
-                count += 1
-        if count > 1:
-            return False
+# def check_constraints(matrix):
+#     for i in matrix:
+#         count = 0
+#         for j in i:
+#             if j == 1:
+#                 count += 1
+#         if count > 1:
+#             return False
     
-    rlen = len(matrix)
-    clen = len(matrix[0])
-    for column in range(clen):
-        count = 0
-        for row in range(rlen):
-            if matrix[row][column] == 1:
-                count += 1
-        if count > 1:
-            return False
+#     rlen = len(matrix)
+#     clen = len(matrix[0])
+#     for column in range(clen):
+#         count = 0
+#         for row in range(rlen):
+#             if matrix[row][column] == 1:
+#                 count += 1
+#         if count > 1:
+#             return False
     
-    for sidx, student in enumerate(matrix):
-        for idx, choice in enumerate(student):
-            if choice == 1:
-                if not (r_mapping[idx] in  stds[sidx]):
-                    return False
+#     for sidx, student in enumerate(matrix):
+#         for idx, choice in enumerate(student):
+#             if choice == 1:
+#                 if not (r_mapping[idx] in  stds[sidx]):
+#                     return False
 
-    return True
+#     return True
 
 def recurse_call(teach, assign, level, ans_seq):
     res_seq = []
@@ -114,7 +132,6 @@ def random_gen():
         if val:
             return matrix.copy()
 
-    return matrix
         # if check_constraints(matrix):
         #     return matrix.copy()
         # else:
@@ -124,7 +141,7 @@ def random_gen():
 
 C = 12
 
-def obj_fun(matrix):
+def energy(matrix):
     val = 0
     for ridx, row in enumerate(matrix):
         for cidx, col in enumerate(row):
@@ -132,34 +149,30 @@ def obj_fun(matrix):
                 val += stds[ridx].index(r_mapping[cidx]) + 1
     return val
 
-def energy(matrix1, matrix2):
-    val1 = obj_fun(matrix1)
-    val2 = obj_fun(matrix2)
-    return math.exp((val1 - val2)/C)
-
 my_sequence = [random_gen()]
 c_energy = 0
 max_energy = 0
 idx = -1
-for i in range(1000):
+for i in range(10000):
     idx -= 1
     temp = random_gen()
     ctr = 0
-    while temp in my_sequence and ctr < 9000:
+    while temp in my_sequence and ctr < 900000:
         temp = random_gen()
         ctr += 1
-    if ctr == 9000:
+    if ctr == 900000:
         break
     my_sequence.append(temp)
-    c_energy = energy(my_sequence[-1], temp)
-    if c_energy > max_energy:
+    c_energy = energy(my_sequence[-1])
+    if c_energy > max_energy or math.exp((max_energy - c_energy)/C) > 0.5:
         max_energy = c_energy
         idx = -1
+
 for r_idx, row in enumerate(my_sequence[idx]):
     for c_idx, col in enumerate(row):
         if col == 1:
             print("Student", r_idx + 1, "-", r_mapping[c_idx])
 
 ans_seq, val = teach_constraint(my_sequence[idx])
-for idx, val in enumerate(ans_seq):
-    print("Student", idx + 1, "assigned to teacher", val + 1)
+for student in range(stlen):
+    print("Student", student + 1, "assigned to teacher", ans_seq[stlen - 1 - student] + 1)
