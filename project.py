@@ -150,23 +150,25 @@ def energy(matrix):
     return val
 
 my_sequence = [random_gen()]
-c_energy = 0
-max_energy = 0
-idx = -1
+c_energy = energy(my_sequence[0])
+max_energy = c_energy
+idx = 0
 for i in range(10000):
-    idx -= 1
     temp = random_gen()
     ctr = 0
-    while temp in my_sequence and ctr < 900000:
+    while temp in my_sequence: #and ctr < 9000:
         temp = random_gen()
         ctr += 1
-    if ctr == 900000:
-        break
+    # if ctr == 9000:
+    #     break
     my_sequence.append(temp)
+    idx -= 1
     c_energy = energy(my_sequence[-1])
     if c_energy > max_energy or math.exp((max_energy - c_energy)/C) > 0.5:
         max_energy = c_energy
         idx = -1
+
+print("i",i)
 
 for r_idx, row in enumerate(my_sequence[idx]):
     for c_idx, col in enumerate(row):
