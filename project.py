@@ -1,16 +1,21 @@
 import math
 import random
 
+# project input files contains the list of projects
 with open('./project_input.txt') as file:
     projects = file.read().split()
 
 print(projects)
 
+# prompt for to take no of teachers and no of students as input
 no_of_teachers = int(input('Enter no. of teachers '))
 no_of_students = int(input('Enter no. of students '))
 
+# maintaining the students and teachers dictionary
 students = {}
 teachers = {}
+
+# denotes that a teacher can't supervise more than two project
 TEACHER_LIMIT = 2
 
 no_of_projects = len(projects)
@@ -18,6 +23,11 @@ no_of_projects = len(projects)
 project_index_mapping = {idx : i for idx, i in enumerate(projects)}
 
 project_student_ratio = no_of_projects//no_of_students
+
+"""
+Below snippet of code generates a students dictionary which contains the list of projects for each student and projects are arranged in 
+increasing order of their preferences
+"""
 for i in range(no_of_students):
     if i == no_of_students - 1:
         students[i] = [projects[j] for j in range(i*project_student_ratio, no_of_projects)]
@@ -32,6 +42,11 @@ for i in range(no_of_students):
         students[i].append(project_index_mapping[idx])
 
 project_teacher_ratio = no_of_projects//no_of_teachers
+
+"""
+Below snippet of code generates a teachers dictionary which contains the list of projects for each teacher and projects are arranged in 
+increasing order of their preferences 
+"""
 for i in range(no_of_teachers):
     if i == no_of_teachers - 1:
         teachers[i] = [projects[j] for j in range(i*project_teacher_ratio, no_of_projects)]
@@ -95,6 +110,9 @@ def recurse_call(teach, assign, level, ans_seq):
                 return res_seq,True
     return res_seq, False
 
+"""
+As we are maintaining a state matrix for teacher as well so the below piece of code checks that each teacher in the state matrix should be assigned to only one student
+"""
 def teach_constraint(matrix):
     assign = []
     for row in matrix:
@@ -117,6 +135,9 @@ def teach_constraint(matrix):
             return res_seq, True
     return res_seq,False
 
+"""
+Below piece of code generates random matrix and checks if it satisfies the constraints
+"""
 def random_gen():
     matrix = [[0 for j in range(no_of_projects)] for i in range(no_of_students)]
     booked = []
@@ -150,23 +171,25 @@ def energy(matrix):
     return val
 
 my_sequence = [random_gen()]
-c_energy = 0
-max_energy = 0
-idx = -1
-for i in range(10000):
-    idx -= 1
+c_energy = energy(my_sequence[0])
+max_energy = c_energy
+idx = 0
+for i in range(1000):
     temp = random_gen()
     ctr = 0
-    while temp in my_sequence and ctr < 900000:
+    while temp in my_sequence and ctr < 90000:
         temp = random_gen()
         ctr += 1
-    if ctr == 900000:
+    if ctr == 90000:
         break
     my_sequence.append(temp)
+    idx -= 1
     c_energy = energy(my_sequence[-1])
     if c_energy > max_energy or math.exp((max_energy - c_energy)/C) > 0.5:
         max_energy = c_energy
         idx = -1
+
+# print("i",i)
 
 for r_idx, row in enumerate(my_sequence[idx]):
     for c_idx, col in enumerate(row):
