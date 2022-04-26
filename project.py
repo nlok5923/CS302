@@ -185,6 +185,7 @@ for i in range(1000):
     my_sequence.append(temp)
     idx -= 1
     c_energy = energy(my_sequence[-1])
+    C = 1 / c_energy
     if c_energy > max_energy or math.exp((max_energy - c_energy)/C) > 0.5:
         max_energy = c_energy
         idx = -1
